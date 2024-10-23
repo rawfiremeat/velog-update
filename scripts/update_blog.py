@@ -3,7 +3,6 @@ import git
 import os
 
 # 벨로그 RSS 피드 URL
-# example : rss_url = 'https://api.velog.io/rss/@rimgosu'
 rss_url = 'https://api.velog.io/rss/@9409velog'
 
 # 깃허브 레포지토리 경로
@@ -28,14 +27,26 @@ for entry in feed.entries:
     file_name = entry.title
     file_name = file_name.replace('/', '-')  # 슬래시를 대시로 대체
     file_name = file_name.replace('\\', '-')  # 백슬래시를 대시로 대체
-    # 필요에 따라 추가 문자 대체
     file_name += '.md'
     file_path = os.path.join(posts_dir, file_name)
 
-    # 파일이 이미 존재하지 않으면 생성
-    if not os.path.exists(file_path):
+    # 파일이 존재하면 기존 내용을 읽어와서 비교
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            existing_content = file.read()
+
+        # 내용이 다르면 파일을 업데이트하고 커밋
+        if existing_content != entry.description:
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(entry.description)  # 수정된 내용을 덮어쓰기
+
+            # 깃허브 커밋
+            repo.git.add(file_path)
+            repo.git.commit('-m', f'Update post: {entry.title}')
+    else:
+        # 파일이 없으면 새로 생성하고 커밋
         with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(entry.description)  # 글 내용을 파일에 작성
+            file.write(entry.description)  # 새 글 내용을 작성
 
         # 깃허브 커밋
         repo.git.add(file_path)
