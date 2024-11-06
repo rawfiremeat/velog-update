@@ -49,6 +49,7 @@ for entry in feed.entries:
             file.write(entry.description)  # 새 글 내용을 작성
 
 
+
         # 깃허브 커밋
         repo.git.add(file_path)
         repo.git.commit('-m', f'Add post: {entry.title}')
